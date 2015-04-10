@@ -122,6 +122,7 @@ function scene:show( event )
 				self.markX = self.x
 				self.markY = self.y    
 				
+				-- старт игры
 				if firstLaunch then
 					firstLaunch = false
 					playText.isVisible = false
@@ -173,14 +174,12 @@ function scene:show( event )
 
 		-- отложенная функция вызова меню
 		local function stopWorld()
-			
 			local options = {
 				effect = "slideDown",
 				time = 300,
 				params = {timePlay=currentPlayTime.text}
 			}
 			composer.gotoScene("menu", options)
-			
 		end
 
 		-- Обработчик столкновений
@@ -190,11 +189,13 @@ function scene:show( event )
 				gameOver = true
 				timer.cancel(timeCount)
 				
+				-- фиксируем лучшее время
 				if tonumber(settings.bestTime) < tonumber(currentPlayTime.text) then
 					settings.bestTime = currentPlayTime.text
 					saveTable(settings, "settings.json")
 				end
 				
+				-- Отключаем таймеры
 				for i=1, 4 do
 					timer.cancel(enemyTimer[i])
 				end

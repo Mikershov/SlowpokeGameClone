@@ -15,15 +15,22 @@ function scene:show( event )
     local phase = event.phase
 
     if ( phase == "will" ) then
-       
+		
     elseif ( phase == "did" ) then
+		if composer.getSceneName("previous") == "menu" then
+			composer.removeScene("menu")
+		end
+		
 		------------- ПЕРЕМЕННЫЕ
 		local physics
 		local enemy = {} 
+		local enemyTimer = {} 
 		local border = {}
 		local hero
 		local velocityUPx
 		local velocityUPy 
+		local Eclosure
+		local timeCount
 		local gameOver = false
 		local firstLaunch = true
 		local sec = 100
@@ -54,8 +61,8 @@ function scene:show( event )
 
 		------------- ОПИСАНИЕ ВРАГОВ
 		-- ускорение врагов
-		local function moveEnemy(self)
-			local vx, vy = self:getLinearVelocity()
+		local function moveEnemy(enemy)
+			local vx, vy = enemy:getLinearVelocity()
 			
 			if vx < 0 then
 				velocityUPx = -20
@@ -69,11 +76,12 @@ function scene:show( event )
 				velocityUPy = 20
 			end
 			
-			self:setLinearVelocity(vx+velocityUPx, vy+velocityUPy)
+			enemy:setLinearVelocity(vx+velocityUPx, vy+velocityUPy)
 			
 			return true
 		end
-
+		
+		-- Дефолтное позиционирование врагов
 		enemy[1] = display.newRect(sceneGroup,20, 20, 40,40)
 		enemy[2] = display.newRect(sceneGroup,10, display.actualContentHeight-10, 20,20)
 		enemy[3] = display.newRect(sceneGroup,364, display.actualContentHeight-20, 40,40)
@@ -83,12 +91,9 @@ function scene:show( event )
 			physics.addBody(enemy[i], {friction=0, bounce=1, density=0})
 			enemy[i]:setFillColor(0, 0, 0.7)
 			enemy[i].myName = "enemy"
-			enemy[i].isFixedRotation = true
-			--timer.performWithDelay(4000, moveEnemy, 0)
+			--enemy[i].isFixedRotation = true
 		end
-
-
-
+		
 
 		-------------- ТАЙМЕР	
 		local function timerUP()
@@ -101,14 +106,13 @@ function scene:show( event )
 			end
 		end
 
-		timeCount = timer.performWithDelay(100,timerUP,0)
-
-
 
 		-------------- ОПИСАНИЕ ГЕРОЯ
 		hero = display.newRect(sceneGroup,display.actualContentWidth/2, display.actualContentHeight/2, 70, 70)
 		hero:setFillColor(0, 0.7, 0)
 		physics.addBody(hero, "kinematic", {friction=0, bounce=0})
+		hero.isBullet = true
+		hero.isSensor = true
 		hero.isFixedRotation = true
 		hero.myName = "hero"
 
@@ -122,13 +126,19 @@ function scene:show( event )
 					firstLaunch = false
 					playText.isVisible = false
 					currentPlayTime.isVisible = true
+					timeCount = timer.performWithDelay(100,timerUP,0)
 					
-					physics.start()
+					-- начальная скорость и направление
+					enemy[1]:setLinearVelocity(math.random(10,200), math.random(10,100))
+					enemy[2]:setLinearVelocity(math.random(10,200), -math.random(10,100))
+					enemy[3]:setLinearVelocity(-math.random(10,200), -math.random(10,100))
+					enemy[4]:setLinearVelocity(-math.random(10,200), math.random(10,100))
 					
-					enemy[1]:setLinearVelocity(math.random(10,30), math.random(10,30))
-					enemy[2]:setLinearVelocity(math.random(20,50), -30)
-					enemy[3]:setLinearVelocity(-30 ,-30)
-					enemy[4]:setLinearVelocity(-30, math.random(10,30))
+					-- Ставим слушатели ускорения
+					for i=1, 4 do
+						Eclosure = function() return moveEnemy(enemy[i]) end
+						enemyTimer[i] = timer.performWithDelay(4000, Eclosure, 0)
+					end
 				end
 				
 			elseif event.phase == "moved" then
@@ -142,11 +152,17 @@ function scene:show( event )
 				-- Ограничения по границам
 				if self.contentBounds.xMax > 384 then
 					self.x = 350
-				elseif self.contentBounds.xMin < 0 then
+				end
+				
+				if self.contentBounds.xMin < 0 then
 					self.x = 35
-				elseif self.contentBounds.yMax > display.actualContentHeight then
+				end
+				
+				if self.contentBounds.yMax > display.actualContentHeight then
 					self.y = display.actualContentHeight - 35
-				elseif self.contentBounds.yMin < 0 then
+				end
+				
+				if self.contentBounds.yMin < 0 then
 					self.y = 35
 				end
 			end
@@ -173,6 +189,16 @@ function scene:show( event )
 				physics.pause()
 				gameOver = true
 				timer.cancel(timeCount)
+				
+				if tonumber(settings.bestTime) < tonumber(currentPlayTime.text) then
+					settings.bestTime = currentPlayTime.text
+					saveTable(settings, "settings.json")
+				end
+				
+				for i=1, 4 do
+					timer.cancel(enemyTimer[i])
+				end
+				
 				timer.performWithDelay(1000, stopWorld, 1)
 			end
 		end

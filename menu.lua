@@ -24,6 +24,8 @@ function scene:show( event )
 		widget.setTheme("widget_theme_android_holo_light")
 		
 		display.newText({parent=sceneGroup,text="GAME OVER", x=display.actualContentWidth/2, y=display.actualContentHeight/2-70, height=40, width=380, font="Ebrima", fontSize=27, align="center"})
+		display.newText({parent=sceneGroup,text="CURRENT TIME: "..event.params.timePlay.." s", x=display.actualContentWidth/2, y=display.actualContentHeight/2-10, height=40, width=380, font="Ebrima", fontSize=27, align="center"})
+		display.newText({parent=sceneGroup,text="BEST TIME: "..settings.bestTime.." s", x=display.actualContentWidth/2, y=display.actualContentHeight/2+50, height=40, width=380, font="Ebrima", fontSize=27, align="center"})
 		
 		--Обработчик кнопки и кнопка
 		local function backButtonFun(e)
@@ -40,7 +42,7 @@ function scene:show( event )
 		local backButton = widget.newButton
 		{
 			left = 100,
-			top = display.actualContentHeight/2,
+			top = display.actualContentHeight/2+130,
 			label = "TRY AGAIN",
 			onEvent = backButtonFun
 		}

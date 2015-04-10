@@ -1,8 +1,3 @@
---
--- For more information on build.settings see the Corona SDK Build Guide at:
--- http://docs.coronalabs.com/guide/distribution/buildSettings/index.html
---
-
 settings =
 {
 	
@@ -12,7 +7,7 @@ settings =
 		-- portrait, portraitUpsideDown, landscapeLeft, landscapeRight
 
 		default = "portrait",
-		supported = { "portrait", }
+		supported = { "portrait", "portraitUpsideDown"}
 	},
 	
 	excludeFiles =

@@ -3,10 +3,11 @@ application =
 
 	content =
 	{
-		width = 768,
-		height = 1024, 
+		width = 384,
+		height = 512, 
+		yAlign = "top",
 		scale = "letterBox",
-		fps = 30,
+		fps = 60,
 		
 		--[[
 		imageSuffix =
